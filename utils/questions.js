@@ -1,4 +1,4 @@
-const getRolesData = require("./getRole.js")
+const db = require("../app.js")
 const questions = [
     {
         name: "action",
@@ -31,7 +31,7 @@ const questions = [
         name: "employee-role",
         type:"list",
         message: `What is the employee's role?`,
-        choices: getRolesData(),
+        choices: db.readRoles(),
         when: (answers) => answers.action === "Add employee"  
     },
 ];
