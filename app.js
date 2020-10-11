@@ -1,6 +1,6 @@
 const mysql = require("mysql");
 const inquirer = require("inquirer");
-const question = 
+const questions = require("./utils/questions.js")
 
 const connection = mysql.createConnection({
   host: "localhost",
@@ -21,3 +21,20 @@ connection.connect(function (err) {
   console.log("connected as id " + connection.threadId);
   promptUser();
 });
+
+const promptUser = () =>{
+    
+    inquirer
+    .prompt(questions)
+    .then(answers => {
+        // Use user feedback for... whatever!!
+    })
+    .catch(error => {
+        if(error.isTtyError) {
+        // Prompt couldn't be rendered in the current environment
+        } else {
+        // Something else when wrong
+        }
+    });
+}
+
