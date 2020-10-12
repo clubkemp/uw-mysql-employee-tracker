@@ -1,5 +1,6 @@
 const mysql = require("mysql")
 const inquirer = require("inquirer");
+const util = require("util")
 // const questions = require("./utils/questions.js")
 const connection = mysql.createConnection({
     host: "localhost",
@@ -41,7 +42,7 @@ const promptUser = () =>{
     })
     .then(answers => {
         if(answers.action === "Add employee"){
-            readRoles();
+            addEmployee();
         }
     })
     .catch(error => {
@@ -52,53 +53,69 @@ const promptUser = () =>{
         }
     });
 }
-const readRoles = () =>{
-    connection.query("SELECT * FROM role",(err,data) =>{
+const readRoles = connection.query("SELECT * FROM role",(err,data) =>{
         if(err) throw err;
-        const roles = data.map(e => e.title)
-        addEmployee(roles)
-
+        return data
     })
-}
-
-const addEmployee = (roles) =>{
-    console.log(roles)
-    inquirer
-    .prompt([
-        {
-            name: "employee-firstName",
-            type: "input",
-            message: `What is the first name of the employee?`
-        },
-        {
-            name: "employee-lastName",
-            type:"input",
-            message: `What is the last name of the employee?` 
-        },
-        {
-            name: "employee-role",
-            type:"list",
-            message: `What is the employee's role?`,
-            choices: roles
-        }
-    ]
-    ).then(answers => {
-        // connection.query("INSERT INTO employee (first_name, last_name, roleVALUES",
-        // {firstName: answers.employee-firstName},
-        // (err,data) =>{
-        //     if(err) throw err;
-        //     const roles = data.map(e => e.title)
-        //     addEmployee(roles)
-    
-        // })
+const readEmployees = connection.query("SELECT * FROM employee",(err,data) =>{
+        if(err) throw err;
+        return data
     })
-    .catch(error => {
+ 
+async function addEmployee (){
+    try{
+        const rolesData = await readRoles._results
+        const employeeData = await readEmployees._results
+        const roletitles = rolesData.map(e => e.title)
+        console.log(roles)
+        inquirer
+        .prompt([
+            {
+                name: "employee-firstName",
+                type: "input",
+                message: `What is the first name of the employee?`
+            },
+            {
+                name: "employee-lastName",
+                type:"input",
+                message: `What is the last name of the employee?` 
+            },
+            {
+                name: "employee-role",
+                type:"list",
+                message: `What is the employee's role?`,
+                choices: roletitles
+            },
+            {
+                name: "employee-manager",
+                type:"list",
+                message: `Who is the employee's manager?`,
+                choices: ["me"]
+            }
+            //TODO: add in another prompt asking for employee manager
+        ]
+        ).then(answers => {
+            //TODO: Ne 
+            // connection.query("INSERT INTO employee (first_name, last_name, roleVALUES",
+            // {firstName: answers.employee-firstName},
+            // (err,data) =>{
+            //     if(err) throw err;
+            //     const roles = data.map(e => e.title)
+            //     addEmployee(roles)
+        
+            // })
+        })
+        .catch(error => {
         if(error.isTtyError) {
         // Prompt couldn't be rendered in the current environment
         } else {
         // Something else when wrong
         }
     });
+    }catch(err){
+        console.log(err)
+    }
+    
 }
 
 
