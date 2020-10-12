@@ -52,7 +52,7 @@ const promptUser = () =>{
         }else if(answers.action === "Add role"){
             addRole();
         }else if(answers.action === "Add department"){
-            
+            addDepartment();
         }else if(answers.action === "update employee role"){
             
         }else{
@@ -230,37 +230,16 @@ const addRole = async () => {
     
 };
 
-const addRole = async () => {
-    try {
-        const departmentData = await readDepartments._results[0]
-        console.log(departmentData);
-        const departmentNames = departmentData.map(e => e.name)
+const addDepartment = async () => {
         inquirer
-        .prompt([
+        .prompt(
         {
-            name:"title",
+            name:"name",
             type:"input",
-            message:"What is the role title?"
-        },
-        {
-            name: "salary",
-            type:"number",
-            message:"How much does the role pay?"
-        },
-        {
-            name:"department",
-            type:"list",
-            choices: departmentNames
-        }
-
-        ])
+            message:"What is the new department called?"
+        })
         .then(answers => {
-            const {title, salary, department} = answers
-            const roleDepartment = departmentData.filter(e => e.name === department)
-            const departmentId = roleDepartment[0].id
-            
-            connection.query("INSERT INTO role (title, salary, department_id) VALUES (?,?,?)",
-            [title, salary, departmentId],
+            connection.query(`INSERT INTO department (name) VALUES ("${answers.name}")`,
             (err,data) =>{
                 if(err) throw err;
                 promptUser();
@@ -273,8 +252,5 @@ const addRole = async () => {
             // Something else when wrong
         }
         });
-    }catch(err){
-        console.log(err)
-    }
     
 }
