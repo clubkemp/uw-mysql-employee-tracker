@@ -43,6 +43,10 @@ const promptUser = () =>{
     .then(answers => {
         if(answers.action === "Add employee"){
             addEmployee();
+        }else if(answers.action === "View all employees"){
+            viewEmployees();
+        }else if(answers.action === "View departments"){
+            viewDepartments();
         }
     })
     .catch(error => {
@@ -54,15 +58,42 @@ const promptUser = () =>{
     });
 }
 const readRoles = connection.query("SELECT * FROM role",(err,data) =>{
-        if(err) throw err;
-        return data
-    })
+    if(err) throw err;
+    return data
+})
 const readEmployees = connection.query("SELECT * FROM employee",(err,data) =>{
-        if(err) throw err;
-        return data
-    })
+    if(err) throw err;
+    return data
+})
+
+const readDepartments = connection.query("SELECT * FROM department",(err,data) =>{
+    if(err) throw err;
+    return data
+})
  
-async function addEmployee (){
+const viewEmployees = async () => {
+    try{
+       const employeeData = await readEmployees._results[0] 
+       console.table(employeeData);
+       promptUser();
+    }
+    catch(err){
+        console.log(err)
+    }
+}
+
+const viewDepartments = async () => {
+    try{
+       const departmentData = await readDepartments._results[0] 
+       console.table(departmentData);
+       promptUser();
+    }
+    catch(err){
+        console.log(err)
+    }
+}
+
+const addEmployee = async () => {
     try{
         const rolesData = await readRoles._results[0]
         console.log(rolesData)
@@ -126,18 +157,8 @@ async function addEmployee (){
     }catch(err){
         console.log(err)
     }
-    
+
 }
 
 
-
-
-// const readRoles = () =>{
-//     connection.query("SELECT * FROM role",function(err,data){
-//         if(err) throw err;
-//         console.table(data);
-//         return data;
-
-//     })
-// }
 
