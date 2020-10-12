@@ -64,46 +64,57 @@ const readEmployees = connection.query("SELECT * FROM employee",(err,data) =>{
  
 async function addEmployee (){
     try{
-        const rolesData = await readRoles._results
-        const employeeData = await readEmployees._results
+        const rolesData = await readRoles._results[0]
+        console.log(rolesData)
+        const employeeData = await readEmployees._results[0]
         const roletitles = rolesData.map(e => e.title)
-        console.log(roles)
+        //TODO: BUild in the employee # too
+        const employeeNames = employeeData.map(e => `${e.first_name} ${e.last_name} id:${e.id}`)
+        employeeNames.push("N/A")
+        
         inquirer
         .prompt([
             {
-                name: "employee-firstName",
+                name: "employeeFirstName",
                 type: "input",
                 message: `What is the first name of the employee?`
             },
             {
-                name: "employee-lastName",
+                name: "employeeLastName",
                 type:"input",
                 message: `What is the last name of the employee?` 
             },
             {
-                name: "employee-role",
+                name: "employeeRole",
                 type:"list",
                 message: `What is the employee's role?`,
                 choices: roletitles
             },
             {
-                name: "employee-manager",
+                name: "employeeManager",
                 type:"list",
                 message: `Who is the employee's manager?`,
-                choices: ["me"]
+                choices: employeeNames
             }
             //TODO: add in another prompt asking for employee manager
         ]
         ).then(answers => {
-            //TODO: Ne 
-            // connection.query("INSERT INTO employee (first_name, last_name, roleVALUES",
-            // {firstName: answers.employee-firstName},
-            // (err,data) =>{
-            //     if(err) throw err;
-            //     const roles = data.map(e => e.title)
-            //     addEmployee(roles)
-        
-            // })
+            const {employeeFirstName, employeeLastName, employeeRole, employeeManager} = answers;
+
+            //TODO: pull out the IDs used
+            const role = rolesData.filter(e => e.title === employeeRole)
+            const roleId = role[0].id
+            let managerId
+            if (employeeManager != "N/A"){
+                managerId = employeeManager.split(':')[1]
+            }
+            console.log(employeeFirstName, employeeLastName, roleId, managerId)
+            connection.query("INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?,?,?,?)",
+            [employeeFirstName, employeeLastName, roleId, managerId],
+            (err,data) =>{
+                if(err) throw err;
+                promptUser();
+            })
         })
         .catch(error => {
         if(error.isTtyError) {

@@ -23,7 +23,7 @@ CREATE TABLE employee (
   id INT NOT NULL AUTO_INCREMENT,
   first_name VARCHAR(30) NOT NULL,
   last_name VARCHAR(30) NOT NULL,
-  role_id INT NOT NULL,
+  role_id INT NOT NULL DEFAULT 1,
   manager_id INT,
   PRIMARY KEY (id),
   FOREIGN KEY (role_id) REFERENCES role(id),
@@ -43,4 +43,10 @@ VALUES ("President", 50000),
   ("Director", 100000),
   ("Associate", 60000),
   ("Junior Dev", 80000),
-  ("Senior Dev", 100000)
+  ("Senior Dev", 100000);
+
+INSERT INTO employee (first_name, last_name)
+VALUES ("Jack", "Johnson"),
+  ("Shakira","Moonbeam"),
+  ("Dan","Rather");  
+
