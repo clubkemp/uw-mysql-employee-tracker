@@ -41,12 +41,22 @@ const promptUser = () =>{
         ],
     })
     .then(answers => {
-        if(answers.action === "Add employee"){
-            addEmployee();
-        }else if(answers.action === "View all employees"){
+        if(answers.action === "View all employees"){
             viewEmployees();
         }else if(answers.action === "View departments"){
             viewDepartments();
+        }else if(answers.action === "view roles"){
+            viewRoles();
+        }else if(answers.action === "Add employee"){
+            addEmployee();
+        }else if(answers.action === "Add role"){
+            addRole();
+        }else if(answers.action === "Add department"){
+            
+        }else if(answers.action === "update employee role"){
+            
+        }else{
+            connection.end()
         }
     })
     .catch(error => {
@@ -80,7 +90,7 @@ const viewEmployees = async () => {
     catch(err){
         console.log(err)
     }
-}
+};
 
 const viewDepartments = async () => {
     try{
@@ -91,7 +101,18 @@ const viewDepartments = async () => {
     catch(err){
         console.log(err)
     }
-}
+};
+
+const viewRoles = async () => {
+    try{
+       const roleData = await readRoles._results[0] 
+       console.table(roleData);
+       promptUser();
+    }
+    catch(err){
+        console.log(err)
+    }
+};
 
 const addEmployee = async () => {
     try{
@@ -158,7 +179,102 @@ const addEmployee = async () => {
         console.log(err)
     }
 
+};
+
+const addRole = async () => {
+    try {
+        const departmentData = await readDepartments._results[0]
+        console.log(departmentData);
+        const departmentNames = departmentData.map(e => e.name)
+        inquirer
+        .prompt([
+        {
+            name:"title",
+            type:"input",
+            message:"What is the role title?"
+        },
+        {
+            name: "salary",
+            type:"number",
+            message:"How much does the role pay?"
+        },
+        {
+            name:"department",
+            type:"list",
+            choices: departmentNames
+        }
+
+        ])
+        .then(answers => {
+            const {title, salary, department} = answers
+            const roleDepartment = departmentData.filter(e => e.name === department)
+            const departmentId = roleDepartment[0].id
+            
+            connection.query("INSERT INTO role (title, salary, department_id) VALUES (?,?,?)",
+            [title, salary, departmentId],
+            (err,data) =>{
+                if(err) throw err;
+                promptUser();
+            })
+        })
+        .catch(error => {
+        if(error.isTtyError) {
+            // Prompt couldn't be rendered in the current environment
+        } else {
+            // Something else when wrong
+        }
+        });
+    }catch(err){
+        console.log(err)
+    }
+    
+};
+
+const addRole = async () => {
+    try {
+        const departmentData = await readDepartments._results[0]
+        console.log(departmentData);
+        const departmentNames = departmentData.map(e => e.name)
+        inquirer
+        .prompt([
+        {
+            name:"title",
+            type:"input",
+            message:"What is the role title?"
+        },
+        {
+            name: "salary",
+            type:"number",
+            message:"How much does the role pay?"
+        },
+        {
+            name:"department",
+            type:"list",
+            choices: departmentNames
+        }
+
+        ])
+        .then(answers => {
+            const {title, salary, department} = answers
+            const roleDepartment = departmentData.filter(e => e.name === department)
+            const departmentId = roleDepartment[0].id
+            
+            connection.query("INSERT INTO role (title, salary, department_id) VALUES (?,?,?)",
+            [title, salary, departmentId],
+            (err,data) =>{
+                if(err) throw err;
+                promptUser();
+            })
+        })
+        .catch(error => {
+        if(error.isTtyError) {
+            // Prompt couldn't be rendered in the current environment
+        } else {
+            // Something else when wrong
+        }
+        });
+    }catch(err){
+        console.log(err)
+    }
+    
 }
-
-
-
