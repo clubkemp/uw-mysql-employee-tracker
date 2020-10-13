@@ -54,7 +54,7 @@ const promptUser = () =>{
         }else if(answers.action === "Add department"){
             addDepartment();
         }else if(answers.action === "update employee role"){
-            
+            updateRole();
         }else{
             connection.end()
         }
@@ -68,7 +68,9 @@ const promptUser = () =>{
     });
 }
 const readRoles = connection.query("SELECT * FROM role",(err,data) =>{
-    if(err) throw err;
+    if(err) {
+        throw err;
+    }
     return data
 })
 const readEmployees = connection.query("SELECT * FROM employee",(err,data) =>{
@@ -80,10 +82,22 @@ const readDepartments = connection.query("SELECT * FROM department",(err,data) =
     if(err) throw err;
     return data
 })
+const joinAll = connection.query(`SELECT first_name, last_name, title AS Position, salary AS Salary, name AS Department
+FROM employee
+INNER JOIN role
+ON role_id = role.id
+INNER JOIN department
+ON department_id = department.id`
+,(err,data) =>{
+    if(err) {
+        throw err;
+    }
+    return data
+})
  
 const viewEmployees = async () => {
     try{
-       const employeeData = await readEmployees._results[0] 
+       const employeeData = await joinAll._results[0] 
        console.table(employeeData);
        promptUser();
     }
@@ -148,12 +162,10 @@ const addEmployee = async () => {
                 message: `Who is the employee's manager?`,
                 choices: employeeNames
             }
-            //TODO: add in another prompt asking for employee manager
         ]
         ).then(answers => {
             const {employeeFirstName, employeeLastName, employeeRole, employeeManager} = answers;
 
-            //TODO: pull out the IDs used
             const role = rolesData.filter(e => e.title === employeeRole)
             const roleId = role[0].id
             let managerId
@@ -254,3 +266,57 @@ const addDepartment = async () => {
         });
     
 }
+
+//TODO: Update employee role
+const updateRole = async () => {
+    try{
+        const rolesData = await readRoles._results[0]
+        console.log(rolesData)
+        const employeeData = await readEmployees._results[0]
+        const roletitles = rolesData.map(e => e.title)
+        //TODO: BUild in the employee # too
+        const employeeNames = employeeData.map(e => `${e.first_name} ${e.last_name} id:${e.id}`)
+        
+        inquirer
+        .prompt([
+            {
+                name: "employeeEdit",
+                type: "list",
+                message: `What is the name of the employee you would like to change?`,
+                choices: employeeNames
+            },
+            {
+                name: "newRole",
+                type:"list",
+                message: `What is their new role?` ,
+                choices: roletitles
+            }
+        ]
+        ).then(answers => {
+            const {employeeEdit, newRole} = answers;
+
+            //TODO: pull out the IDs used
+            const role = rolesData.filter(e => e.title === newRole)
+            const roleId = role[0].id
+            const employeeId = employeeEdit.split(':')[1]
+            
+
+            connection.query(`UPDATE employee SET role_id=? WHERE id=?`,
+            [roleId, employeeId],
+            (err,data) =>{
+                if(err) throw err;
+                promptUser();
+            })
+        })
+        .catch(error => {
+        if(error.isTtyError) {
+        // Prompt couldn't be rendered in the current environment
+        } else {
+        // Something else when wrong
+        }
+    });
+    }catch(err){
+        console.log(err)
+    }
+
+};

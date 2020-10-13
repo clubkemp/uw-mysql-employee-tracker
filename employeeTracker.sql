@@ -14,20 +14,17 @@ CREATE TABLE role(
   id INT NOT NULL AUTO_INCREMENT,
   title VARCHAR(30) NOT NULL,
   salary DECIMAL NOT NULL,
-  department_id INT NOT NULL DEFAULT 1,
+  department_id INT NOT NULL,
   PRIMARY KEY(id),
-  FOREIGN KEY(department_id) REFERENCES department(id)
 );
 
 CREATE TABLE employee (
   id INT NOT NULL AUTO_INCREMENT,
   first_name VARCHAR(30) NOT NULL,
   last_name VARCHAR(30) NOT NULL,
-  role_id INT NOT NULL DEFAULT 1,
-  manager_id INT,
+  role_id INT NOT NULL,
+  manager_id INT DEFAULT NULL,
   PRIMARY KEY (id),
-  FOREIGN KEY (role_id) REFERENCES role(id),
-  FOREIGN KEY (manager_id) REFERENCES employee(id)
 );
 
 INSERT INTO department (name)
@@ -35,18 +32,28 @@ VALUES ("IT"),
   ("HR"),
   ("Marketing"),
   ("Development Ops");
+  ("Admin");
 
-INSERT INTO role (title, salary)
-VALUES ("President", 50000),
-  ("CEO", 50000),
-  ("President", 50000),
-  ("Director", 100000),
-  ("Associate", 60000),
-  ("Junior Dev", 80000),
-  ("Senior Dev", 100000);
+INSERT INTO role (title, salary, department_id)
+VALUES ("President", 50000, 5 ),
+  ("CEO", 50000, 5),
+  ("IT Director", 100000, 1),
+  ("HR Director", 100000, 2),
+  ("Marketing Director", 100000, 3),
+  ("Dev Ops Director", 120000, 4),
+  ("Recruiter", 60000, 2),
+  ("Sys Administrator", 150,000, 1),
+  ("Associate", 60000, 3),
+  ("Ninja", 0, 5),
+  ("Junior Dev", 80000, 3),
+  ("Senior Dev", 100000, 3);
 
-INSERT INTO employee (first_name, last_name)
-VALUES ("Jack", "Johnson"),
-  ("Shakira","Moonbeam"),
-  ("Dan","Rather");  
+INSERT INTO employee (first_name, last_name, role_id, manager_id)
+VALUES ("Shakira","Moonbeam", 1),
+("Jack", "Johnson", 2,1),
+("Dan","Rather",3, 1),
+("Skip", "Noles", 4, 1),
+("Susann", "Hixbee", 5, 1),
+("Lisa", "Adolfson", 6, 1),
+()  
 
