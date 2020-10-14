@@ -36,7 +36,7 @@ const promptUser = () =>{
             "Add employee",
             "Add role",
             "Add department",
-            "update employee role",
+            "Update employee role",
             "exit"
         ],
     })
@@ -45,7 +45,7 @@ const promptUser = () =>{
             viewEmployees();
         }else if(answers.action === "View departments"){
             viewDepartments();
-        }else if(answers.action === "view roles"){
+        }else if(answers.action === "View roles"){
             viewRoles();
         }else if(answers.action === "Add employee"){
             addEmployee();
@@ -53,7 +53,7 @@ const promptUser = () =>{
             addRole();
         }else if(answers.action === "Add department"){
             addDepartment();
-        }else if(answers.action === "update employee role"){
+        }else if(answers.action === "Update employee role"){
             updateRole();
         }else{
             connection.end()
@@ -67,12 +67,14 @@ const promptUser = () =>{
         }
     });
 }
-const readRoles = connection.query("SELECT * FROM role",(err,data) =>{
-    if(err) {
-        throw err;
-    }
-    return data
-})
+const readRoles = () =>{
+    connection.query("SELECT * FROM role",(err,data) =>{
+        if(err) {
+            throw err;
+        }
+        return data
+    })
+} 
 const readEmployees = connection.query("SELECT * FROM employee",(err,data) =>{
     if(err) throw err;
     return data
@@ -83,16 +85,16 @@ const readDepartments = connection.query("SELECT * FROM department",(err,data) =
     return data
 })
 const joinAll = connection.query(`SELECT first_name, last_name, title AS Position, salary AS Salary, name AS Department
-FROM employee
-INNER JOIN role
-ON role_id = role.id
-INNER JOIN department
-ON department_id = department.id`
-,(err,data) =>{
-    if(err) {
-        throw err;
-    }
-    return data
+    FROM employee
+    INNER JOIN role
+    ON role_id = role.id
+    INNER JOIN department
+    ON department_id = department.id`
+    ,(err,data) =>{
+        if(err) {
+            throw err;
+        }
+        return data
 })
  
 const viewEmployees = async () => {
@@ -119,7 +121,7 @@ const viewDepartments = async () => {
 
 const viewRoles = async () => {
     try{
-       const roleData = await readRoles._results[0] 
+       const roleData = await readRoles() 
        console.table(roleData);
        promptUser();
     }

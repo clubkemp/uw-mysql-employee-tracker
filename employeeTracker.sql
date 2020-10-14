@@ -55,5 +55,9 @@ VALUES ("Shakira","Moonbeam", 1),
 ("Skip", "Noles", 4, 1),
 ("Susann", "Hixbee", 5, 1),
 ("Lisa", "Adolfson", 6, 1),
-()  
+("Rambo", "Perkins", 7,4),
+("Jimbo", "Taylor", 8, 3),
+("Ramona", "Gatter", 8, 3),
+("Hanna", "Rizz", 11,6),
+("Don", "Won", 11, 6)
 
