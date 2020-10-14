@@ -16,7 +16,7 @@ const connection = mysql.createConnection({
     database: "employee_trackerdb"
   });
 
-
+const query = util.promisify(connection.query).bind(connection);
 connection.connect(function (err) {
     if (err) throw err;
     console.log("connected as id " + connection.threadId);
@@ -31,12 +31,14 @@ const promptUser = () =>{
         type: "list",
         choices: [
             "View all employees",
+            "View Employee by Manager",
             "View departments",
             "View roles",
             "Add employee",
             "Add role",
             "Add department",
             "Update employee role",
+            "Update employee manager",
             "exit"
         ],
     })
@@ -55,9 +57,14 @@ const promptUser = () =>{
             addDepartment();
         }else if(answers.action === "Update employee role"){
             updateRole();
+        }else if(answers.action === "Update employee manager"){
+            updateManager();
+        }else if(answers.action === "View Employee by Manager"){
+            viewEmployeeByManager();
         }else{
             connection.end()
         }
+        
     })
     .catch(error => {
         if(error.isTtyError) {
@@ -67,40 +74,85 @@ const promptUser = () =>{
         }
     });
 }
-const readRoles = () =>{
-    connection.query("SELECT * FROM role",(err,data) =>{
-        if(err) {
-            throw err;
-        }
+const readRoles = async () =>{
+    try{
+        const data = await query("SELECT * FROM role")
         return data
-    })
+    }catch(err){
+        console.log(err)
+    }
+    
 } 
-const readEmployees = connection.query("SELECT * FROM employee",(err,data) =>{
-    if(err) throw err;
-    return data
-})
-
-const readDepartments = connection.query("SELECT * FROM department",(err,data) =>{
-    if(err) throw err;
-    return data
-})
-const joinAll = connection.query(`SELECT first_name, last_name, title AS Position, salary AS Salary, name AS Department
-    FROM employee
-    INNER JOIN role
-    ON role_id = role.id
-    INNER JOIN department
-    ON department_id = department.id`
-    ,(err,data) =>{
-        if(err) {
-            throw err;
-        }
+const readEmployees = async () =>{
+    try{
+        const data = await query("SELECT * FROM employee")
         return data
-})
+    }catch(err){
+        console.log(err)
+    }
+} 
+const readDepartments = async () =>{
+    try{
+        const data =query("SELECT * FROM department")
+        return data
+    }catch(err){
+        console.log(err)
+    }
+}
  
 const viewEmployees = async () => {
     try{
-       const employeeData = await joinAll._results[0] 
-       console.table(employeeData);
+        const data = await query(`SELECT e.first_name, e.last_name, title AS Position, salary AS Salary, name AS Department, CONCAT (m.first_name, " ", m.last_name) AS Manager
+        FROM employee e
+        INNER JOIN role
+        ON e.role_id = role.id
+        INNER JOIN department
+        ON role.department_id = department.id
+        INNER JOIN employee m
+        on e.manager_id = m.id;`
+        ); 
+       console.table(data);
+       promptUser();
+    }
+    catch(err){
+        console.log(err)
+    }
+};
+const viewEmployeeByManager = async () => {
+    const employeeData = await readEmployees()
+    const employeeNames = employeeData.map(e => `${e.first_name} ${e.last_name} id:${e.id}`)
+    try{
+        inquirer
+        .prompt([
+            {
+                name: "team",
+                type: "list",
+                message: `Who's team would you like to see?`,
+                choices: employeeNames
+            },
+        ]
+        ).then(answers => {;
+            const employeeId = employeeEdit.split(':')[1]
+            query(`SELECT CONCAT(first_name, " ",last_name) AS Employee FROM employee WHERE id=?`,
+            [employeeId])
+        })
+        .catch(error => {
+        if(error.isTtyError) {
+        // Prompt couldn't be rendered in the current environment
+        } else {
+        // Something else when wrong
+        }
+    });
+        const data = await query(`SELECT e.first_name, e.last_name, title AS Position, salary AS Salary, name AS Department, CONCAT (m.first_name, " ", m.last_name) AS Manager
+        FROM employee e
+        INNER JOIN role
+        ON e.role_id = role.id
+        INNER JOIN department
+        ON role.department_id = department.id
+        INNER JOIN employee m
+        on e.manager_id = m.id;`
+        ); 
+       console.table(data);
        promptUser();
     }
     catch(err){
@@ -110,7 +162,7 @@ const viewEmployees = async () => {
 
 const viewDepartments = async () => {
     try{
-       const departmentData = await readDepartments._results[0] 
+       const departmentData = await readDepartments()
        console.table(departmentData);
        promptUser();
     }
@@ -121,9 +173,10 @@ const viewDepartments = async () => {
 
 const viewRoles = async () => {
     try{
-       const roleData = await readRoles() 
-       console.table(roleData);
-       promptUser();
+        const roleData = await readRoles() 
+        console.table(roleData);
+        promptUser();
+       
     }
     catch(err){
         console.log(err)
@@ -132,9 +185,9 @@ const viewRoles = async () => {
 
 const addEmployee = async () => {
     try{
-        const rolesData = await readRoles._results[0]
+        const rolesData = await readRoles();
         console.log(rolesData)
-        const employeeData = await readEmployees._results[0]
+        const employeeData = await readEmployees()
         const roletitles = rolesData.map(e => e.title)
         //TODO: BUild in the employee # too
         const employeeNames = employeeData.map(e => `${e.first_name} ${e.last_name} id:${e.id}`)
@@ -197,8 +250,7 @@ const addEmployee = async () => {
 
 const addRole = async () => {
     try {
-        const departmentData = await readDepartments._results[0]
-        console.log(departmentData);
+        const departmentData = await readDepartments()
         const departmentNames = departmentData.map(e => e.name)
         inquirer
         .prompt([
@@ -272,9 +324,9 @@ const addDepartment = async () => {
 //TODO: Update employee role
 const updateRole = async () => {
     try{
-        const rolesData = await readRoles._results[0]
+        const rolesData = await readRoles()
         console.log(rolesData)
-        const employeeData = await readEmployees._results[0]
+        const employeeData = await readEmployees()
         const roletitles = rolesData.map(e => e.title)
         //TODO: BUild in the employee # too
         const employeeNames = employeeData.map(e => `${e.first_name} ${e.last_name} id:${e.id}`)
@@ -305,6 +357,55 @@ const updateRole = async () => {
 
             connection.query(`UPDATE employee SET role_id=? WHERE id=?`,
             [roleId, employeeId],
+            (err,data) =>{
+                if(err) throw err;
+                promptUser();
+            })
+        })
+        .catch(error => {
+        if(error.isTtyError) {
+        // Prompt couldn't be rendered in the current environment
+        } else {
+        // Something else when wrong
+        }
+    });
+    }catch(err){
+        console.log(err)
+    }
+
+};
+
+const updateManager = async () => {
+    try{
+        const employeeData = await readEmployees()
+        //TODO: BUild in the employee # too
+        const employeeNames = employeeData.map(e => `${e.first_name} ${e.last_name} id:${e.id}`)
+        
+        inquirer
+        .prompt([
+            {
+                name: "employee",
+                type: "list",
+                message: `Which Employee would you like to update the manager for?`,
+                choices: employeeNames
+            },
+            {
+                name: "manager",
+                type:"list",
+                message: `Who is their new manager?` ,
+                choices: employeeNames
+            }
+        ]
+        ).then(answers => {
+            const {employee, manager} = answers;
+
+            //TODO: pull out the IDs used
+            const employeeId = employee.split(':')[1]
+            console.log(employeeId)
+            const managerId = manager.split(":")[1]
+            console.log(managerId)
+            connection.query(`UPDATE employee SET manager_id=? WHERE id=?`,
+            [managerId, employeeId],
             (err,data) =>{
                 if(err) throw err;
                 promptUser();
