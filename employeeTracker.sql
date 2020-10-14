@@ -15,7 +15,7 @@ CREATE TABLE role(
   title VARCHAR(30) NOT NULL,
   salary DECIMAL NOT NULL,
   department_id INT NOT NULL,
-  PRIMARY KEY(id),
+  PRIMARY KEY(id)
 );
 
 CREATE TABLE employee (
@@ -24,14 +24,14 @@ CREATE TABLE employee (
   last_name VARCHAR(30) NOT NULL,
   role_id INT NOT NULL,
   manager_id INT DEFAULT NULL,
-  PRIMARY KEY (id),
+  PRIMARY KEY (id)
 );
 
 INSERT INTO department (name)
 VALUES ("IT"),
   ("HR"),
   ("Marketing"),
-  ("Development Ops");
+  ("Development Ops"),
   ("Admin");
 
 INSERT INTO role (title, salary, department_id)
@@ -42,14 +42,14 @@ VALUES ("President", 50000, 5 ),
   ("Marketing Director", 100000, 3),
   ("Dev Ops Director", 120000, 4),
   ("Recruiter", 60000, 2),
-  ("Sys Administrator", 150,000, 1),
+  ("Sys Administrator", 150000, 1),
   ("Associate", 60000, 3),
   ("Ninja", 0, 5),
-  ("Junior Dev", 80000, 3),
-  ("Senior Dev", 100000, 3);
+  ("Junior Dev", 80000, 4),
+  ("Senior Dev", 100000, 4);
 
 INSERT INTO employee (first_name, last_name, role_id, manager_id)
-VALUES ("Shakira","Moonbeam", 1),
+VALUES ("Shakira","Moonbeam", 1, 0),
 ("Jack", "Johnson", 2,1),
 ("Dan","Rather",3, 1),
 ("Skip", "Noles", 4, 1),

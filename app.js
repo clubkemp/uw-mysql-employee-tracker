@@ -4,6 +4,9 @@ const mysql = require("mysql")
 const inquirer = require("inquirer");
 //requrie in utils so we can promisify the sql queries
 const util = require("util")
+const figlet = require('figlet');
+ 
+
 //connection params used to establish our mysql connection
 const connection = mysql.createConnection({
     host: "localhost",
@@ -24,9 +27,17 @@ const query = util.promisify(connection.query).bind(connection);
 connection.connect(function (err) {
     if (err) throw err;
     //log the connection
-    console.log("connected as id " + connection.threadId);
+    console.log("connected as id " + connection.threadId);figlet('Employee Tracker', function(err, data) {
+        if (err) {
+            console.log('Something went wrong...');
+            console.dir(err);
+            return;
+        }
+        console.log(data)
+        promptUser();
+    });
     //start the user prompt cycle
-    promptUser();
+    
 });
 //main application logic switches in here
 const promptUser = () =>{  
