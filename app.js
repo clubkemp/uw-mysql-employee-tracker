@@ -39,6 +39,7 @@ const promptUser = () =>{
             "Add department",
             "Update employee role",
             "Update employee manager",
+            "Delete Employee",
             "exit"
         ],
     })
@@ -61,9 +62,12 @@ const promptUser = () =>{
             updateManager();
         }else if(answers.action === "View Employee by Manager"){
             viewEmployeeByManager();
+        }else if(answers.action === "Delete Employee"){
+            deleteEmployee();
         }else{
             connection.end()
         }
+        
         
     })
     .catch(error => {
@@ -119,9 +123,10 @@ const viewEmployees = async () => {
     }
 };
 const viewEmployeeByManager = async () => {
-    const employeeData = await readEmployees()
-    const employeeNames = employeeData.map(e => `${e.first_name} ${e.last_name} id:${e.id}`)
     try{
+        const employeeData = await readEmployees()
+        const employeeNames = employeeData.map(e => `${e.first_name} ${e.last_name} id:${e.id}`)
+    
         inquirer
         .prompt([
             {
@@ -132,9 +137,16 @@ const viewEmployeeByManager = async () => {
             },
         ]
         ).then(answers => {;
-            const employeeId = employeeEdit.split(':')[1]
-            query(`SELECT CONCAT(first_name, " ",last_name) AS Employee FROM employee WHERE id=?`,
-            [employeeId])
+            const employeeId = answers.team.split(':')[1]
+            console.log(employeeId)
+            connection.query(`SELECT CONCAT(first_name, " ",last_name) AS Employee FROM employee WHERE manager_id=?`,
+            [employeeId],
+            (err, data)=>{
+                if(err) throw err;
+                console.table(data);
+                promptUser();
+            })
+            
         })
         .catch(error => {
         if(error.isTtyError) {
@@ -143,17 +155,6 @@ const viewEmployeeByManager = async () => {
         // Something else when wrong
         }
     });
-        const data = await query(`SELECT e.first_name, e.last_name, title AS Position, salary AS Salary, name AS Department, CONCAT (m.first_name, " ", m.last_name) AS Manager
-        FROM employee e
-        INNER JOIN role
-        ON e.role_id = role.id
-        INNER JOIN department
-        ON role.department_id = department.id
-        INNER JOIN employee m
-        on e.manager_id = m.id;`
-        ); 
-       console.table(data);
-       promptUser();
     }
     catch(err){
         console.log(err)
@@ -422,4 +423,60 @@ const updateManager = async () => {
         console.log(err)
     }
 
+};
+
+const deleteEmployee = async () => {
+    try{
+        const employeeData = await readEmployees()
+        const employeeNames = employeeData.map(e => `${e.first_name} ${e.last_name} id:${e.id}`)
+    
+        inquirer
+        .prompt([
+            {
+                name: "deleteEmployee",
+                type: "list",
+                message: `Who would you like to delete?`,
+                choices: employeeNames
+            },
+        ]
+        ).then(answers => {;
+            const employeeId = answers.deleteEmployee.split(':')[1]
+            console.log(employeeId)
+            connection.query(`DELETE FROM employee WHERE id=?`,
+            [employeeId],
+            (err, data)=>{
+                if(err) throw err;
+                console.log(`${answers.deleteEmployee} has been successfully deleted`)
+                promptUser();
+            })
+            
+        })
+        .catch(error => {
+        if(error.isTtyError) {
+        // Prompt couldn't be rendered in the current environment
+        } else {
+        // Something else when wrong
+        }
+    });
+    }
+    catch(err){
+        console.log(err)
+    }
+};
+const viewRoles = async () => {
+    try{
+        const roleData = await readRoles()
+        inquirer.prompt({
+            name: "deleteRole",
+            type: "list",
+            message: `Who would you like to delete?`,
+            choices: employeeNames
+        }) 
+        console.table(roleData);
+        promptUser();
+       
+    }
+    catch(err){
+        console.log(err)
+    }
 };
