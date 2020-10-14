@@ -27,7 +27,8 @@ const query = util.promisify(connection.query).bind(connection);
 connection.connect(function (err) {
     if (err) throw err;
     //log the connection
-    console.log("connected as id " + connection.threadId);figlet('Employee Tracker', function(err, data) {
+    console.log("connected as id " + connection.threadId);
+    figlet('Employee Tracker', function(err, data) {
         if (err) {
             console.log('Something went wrong...');
             console.dir(err);
